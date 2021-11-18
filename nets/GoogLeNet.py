@@ -33,8 +33,8 @@ class Inception(nn.Module):
         return torch.cat((p1, p2, p3, p4), dim=1)
 
 
-def gimme_net():
-    b1 = nn.Sequential(nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
+def gimme_net(dimensions):
+    b1 = nn.Sequential(nn.Conv2d(dimensions, 64, kernel_size=7, stride=2, padding=3),
                        nn.ReLU(), nn.MaxPool2d(kernel_size=3, stride=2,
                                                padding=1), nn.LazyBatchNorm2d())
     b2 = nn.Sequential(nn.Conv2d(64, 64, kernel_size=1),  nn.ReLU(),
@@ -62,5 +62,5 @@ def gimme_net():
 
 
 class GoogLeNet:
-    def __init__(self):
-        self.net = gimme_net()
+    def __init__(self, dimensions):
+        self.net = gimme_net(dimensions)
