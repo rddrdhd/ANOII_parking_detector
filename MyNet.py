@@ -3,9 +3,11 @@ import cv2
 import numpy as np
 import glob
 import torch
+import torchvision
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
+import torchvision.transforms.functional as TF
 from nets.GoogLeNet import GoogLeNet
 from PIL import Image
 import utils
@@ -17,12 +19,15 @@ class MyNet:
 
     def __init__(self, dimensions, net_type, batch_size=8, epoch=1, img_size = 224):
         self.data = []
+        #TODO fix error for grayscale 
         self.dimensions = dimensions  # grayscale=1 / rgb=3
         self.type = net_type
         self.batch_size = batch_size
-        self.path = 'trained_nets/'+net_type+'_e'+str(epoch)+'_d'+str(dimensions)+'.pth'
         self.epoch = epoch
         self.img_size = img_size
+
+        self.path = 'trained_nets/'+net_type+'_e'+str(epoch)+'_d'+str(dimensions)+'_s'+str(self.img_size)+'.pth'
+
         if(self.dimensions == 1): # grayscale img
             self.transform = transforms.Compose([
                 transforms.Resize(self.img_size),
@@ -33,6 +38,8 @@ class MyNet:
              self.transform = transforms.Compose([
                 transforms.Resize(self.img_size),
                 transforms.ToTensor(),
+                #transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+                #transforms.ColorJitter(brightness=0, contrast=0, saturation=1, hue=0),
             ])
 
     def train(self):
@@ -43,15 +50,16 @@ class MyNet:
         data_loader = torch.utils.data.DataLoader(
             image_datasets, batch_size=self.batch_size, shuffle=True, num_workers=4)
         classes = ('free', 'full')
-        __, labels = iter(torch.utils.data.DataLoader(
+        images, labels = iter(torch.utils.data.DataLoader(
             image_datasets, batch_size=self.batch_size, shuffle=True, num_workers=4)).next()
 
-        print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
-
+        #print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
+       # cv2.imshow(torchvision.utils.make_grid(images))
         # net types
         if(self.type == "GoogLeNet"):
             net = GoogLeNet(self.dimensions).net  # models.googlenet(pretrained=True)
 
+  
 
         # using CUDA if availble
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -61,7 +69,7 @@ class MyNet:
         # magic, do not touch
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
+        print("Starting trainig:\t",self.type,"with",self.epoch,"epochs and",self.dimensions,"dimensions")
         # training, yay!
         for epoch in range(self.epoch):  # loop over the dataset multiple times
             print('epoch %d' % epoch)
@@ -86,23 +94,24 @@ class MyNet:
                           (epoch + 1, i + 1, running_loss / 20))
                     running_loss = 0.0
 
-        print(self.type, 'finished training')
+        print('training finished', end="\t")
         torch.save(net, self.path)
         print(self.type, 'saved to', self.path)
 
     def test(self):
         actual_results = utils.get_true_results()  # ground truth
+
         predicted_results = []  # net results
         iii = 0  # iterator
         false_positive = 0  # false positive
         false_negative = 0  # false negative
         true_positive = 0  # true positive
-        true_negative = 0  # true negative
-
-        
-
+        true_negative = 0  # true negative 
 
         net = torch.load(self.path)
+
+        print(self.type,"loaded from",self.path)
+
         net.eval()
         device = torch.device("cuda:0" if torch.cuda.is_available()
                               else "cpu")  # pokud mam cuda device
@@ -112,9 +121,12 @@ class MyNet:
 
         parking_lot_coordinates = utils.get_coordinates()
 
+        print("Starting testing")
+
         for img in test_images:
             one_park_image = cv2.imread(img)
             one_park_image_show = one_park_image.copy()
+            #TF.solarize(img, 0.255)
 
             for parking_spot_coordinates in parking_lot_coordinates:
 
@@ -162,7 +174,9 @@ class MyNet:
             key = cv2.waitKey(0)
             if key == 27:  # exit on ESC
                 break
-
+         
+        print("Testing finished for \t",self.type,"with",self.epoch,"epochs and",self.dimensions,"dimensions")
+       
         eval_result = utils.get_parking_evaluation(
             true_positive, true_negative, false_positive, false_negative, iii)
         utils.print_evaluation_header()
