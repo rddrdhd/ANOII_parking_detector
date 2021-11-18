@@ -1,0 +1,5 @@
+__pycache__/
+test_images/
+train_images/
+trained_nets/
+win_venv/
