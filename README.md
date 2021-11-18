@@ -5,7 +5,9 @@ Using convolutional neural networks to detect empty/full parking spots.(Python w
 
 
 
-to run this project, you need train_images and test_images folders, filled with the images from school. 
+To run this project, you need train_images and test_images folders, filled with the images from school. 
+
+To run venv from windows, you may need to open your cmd/PowerShell as administrator and set execution policy: `Set-ExecutionPolicy RemoteSigned`
 
 How to run locally:
 - create venv: `python3 -m venv my_venv` 
