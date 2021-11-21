@@ -2,12 +2,18 @@
 import cv2
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 MAX_BRIGHTNESS = 255
 COLOR_BLUE = (MAX_BRIGHTNESS, 0, 0)
 COLOR_RED = (0, 0, MAX_BRIGHTNESS)
 COLOR_GREEN = (0, MAX_BRIGHTNESS, 0)
 
+
+def imshow(img):
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show() 
 
 def draw_rect(img, points, color=COLOR_GREEN):
     # obtáhnout parkovací místo
