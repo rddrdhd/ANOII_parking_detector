@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 import glob
@@ -12,7 +11,9 @@ from nets.GoogLeNet import GoogLeNet
 from nets.VGGNet import VGGNet
 from PIL import Image
 import utils
-#from torchvision.models.googlenet import googlenet
+
+
+# from torchvision.models.googlenet import googlenet
 
 
 def is_it_empty_in_night(canny_image, treshold):
@@ -27,22 +28,23 @@ def is_it_empty_in_night(canny_image, treshold):
 
 class MyNet:
 
-    def __init__(self, dimensions, net_type, batch_size=8, epoch=1, img_size = 224):
+    def __init__(self, dimensions, net_type, batch_size=8, epoch=1, img_size=224):
         self.data = []
-        #TODO fix error for grayscale 
+        # TODO fix error for grayscale
         self.dimensions = dimensions  # grayscale=1 / rgb=3
         self.type = net_type
         self.batch_size = batch_size
         self.epoch = epoch
         self.img_size = img_size
 
-        self.path = 'trained_nets/'+net_type+'_e'+str(epoch)+'_d'+str(dimensions)+'_s'+str(self.img_size)+'.pth'
+        self.path = 'trained_nets/' + net_type + '_e' + str(epoch) + '_d' + str(dimensions) + '_s' + str(
+            self.img_size) + '.pth'
         self.transform = transforms.Compose([
-                transforms.Resize(self.img_size),
-                transforms.ToTensor(),
-                transforms.Grayscale(num_output_channels=3),
-                transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.7, hue=0),
-            ])
+            transforms.Resize(self.img_size),
+            transforms.ToTensor(),
+            transforms.Grayscale(num_output_channels=3),
+            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.7, hue=0),
+        ])
         """
         if(self.dimensions == 1): # grayscale img
             self.transform = transforms.Compose([
@@ -69,27 +71,25 @@ class MyNet:
         classes = ('free', 'full')
         images, labels = iter(data_loader).next()
 
-        #print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
-        #cv2.imshow(torchvision.utils.make_grid(images))
+        # print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
+        # cv2.imshow(torchvision.utils.make_grid(images))
         utils.imshow(torchvision.utils.make_grid(images))
         # net types
-        if(self.type == "GoogLeNet"):
+        if self.type == "GoogLeNet":
             net = GoogLeNet(3).net  # models.googlenet(pretrained=True)
 
-        elif(self.type == "VGGNet"):
+        elif self.type == "VGGNet":
             net = VGGNet(3).net  # models.googlenet(pretrained=True)
-
-  
 
         # using CUDA if availble
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        print("using",device)
+        print("using", device)
         net.to(device)
 
         # magic, do not touch
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-        print("Starting trainig:\t",self.type,"with",self.epoch,"epochs and",self.dimensions,"dimensions")
+        print("Starting trainig:\t", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
         # training, yay!
         for epoch in range(self.epoch):  # loop over the dataset multiple times
             print('epoch %d' % epoch)
@@ -109,7 +109,7 @@ class MyNet:
 
                 # print statistics
                 running_loss += loss.item()
-                if i % 20 == 19:    # print every 2000 mini-batches
+                if i % 20 == 19:  # print every 2000 mini-batches
                     print('[%d, %5d] loss: %.3f' %
                           (epoch + 1, i + 1, running_loss / 20))
                     running_loss = 0.0
@@ -119,7 +119,7 @@ class MyNet:
         print(self.type, 'saved to', self.path)
 
     def test(self):
-       
+
         actual_results = utils.get_true_results()  # ground truth
 
         predicted_results = []  # net results
@@ -131,7 +131,7 @@ class MyNet:
 
         net = torch.load(self.path)
 
-        print(self.type,"loaded from",self.path)
+        print(self.type, "loaded from", self.path)
 
         net.eval()
         device = torch.device("cuda:0" if torch.cuda.is_available()
@@ -147,8 +147,7 @@ class MyNet:
         for img in test_images:
             one_park_image = cv2.imread(img)
             one_park_image_show = one_park_image.copy()
-            #TF.solarize(img, 0.255)
-            
+            # TF.solarize(img, 0.255)
 
             for parking_spot_coordinates in parking_lot_coordinates:
 
@@ -157,9 +156,8 @@ class MyNet:
                 warped_image = utils.four_point_transform(
                     one_park_image, np.array(pts_float))
                 res_image = cv2.resize(warped_image, (self.img_size, self.img_size))
-                
-                
-                #new_img = transforms.functional.equalize(res_image)#transforms.functional.adjust_brightness(res_image,brightness_factor=1.5)
+
+                # new_img = transforms.functional.equalize(res_image)#transforms.functional.adjust_brightness(res_image,brightness_factor=1.5)
                 one__img = cv2.cvtColor(res_image, cv2.COLOR_BGR2RGB)
                 img_pil = Image.fromarray(one__img)
 
@@ -170,23 +168,23 @@ class MyNet:
                 _, predicted = torch.max(output_pytorch, 1)
                 spotted_car = predicted[0]
                 predicted_results.append(spotted_car)
-                #print("parking spot coord:", end="\t")
-                if(actual_results[iii] and spotted_car):
+                # print("parking spot coord:", end="\t")
+                if (actual_results[iii] and spotted_car):
                     true_positive += 1
                     utils.draw_cross(one_park_image_show, pts_int)
-                    #print("TP")
-                if(actual_results[iii] and not spotted_car):
+                    # print("TP")
+                if (actual_results[iii] and not spotted_car):
                     false_negative += 1
                     utils.draw_rect(one_park_image_show, pts_int, utils.COLOR_BLUE)
-                    #print("FN")
-                if(not actual_results[iii] and spotted_car):
+                    # print("FN")
+                if (not actual_results[iii] and spotted_car):
                     false_positive += 1
                     utils.draw_cross(one_park_image_show, pts_int, utils.COLOR_BLUE)
-                    #print("FP")
-                if(not actual_results[iii] and not spotted_car):
+                    # print("FP")
+                if (not actual_results[iii] and not spotted_car):
                     true_negative += 1
                     utils.draw_rect(one_park_image_show, pts_int)
-                    #print("TN")
+                    # print("TN")
 
                 iii += 1
 
@@ -195,14 +193,13 @@ class MyNet:
             key = cv2.waitKey(0)
             if key == 27:  # exit on ESC
                 break
-         
-        print("Testing finished for \t",self.type,"with",self.epoch,"epochs and",self.dimensions,"dimensions")
-       
+
+        print("Testing finished for \t", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
+
         eval_result = utils.get_parking_evaluation(
             true_positive, true_negative, false_positive, false_negative, iii)
         utils.print_evaluation_header()
         utils.print_evaluation_result(eval_result)
-
 
     def cheat_test(self, treshold):
 
@@ -244,7 +241,7 @@ class MyNet:
                 res_image = cv2.resize(warped_image, (self.img_size, self.img_size))
 
                 blur_image = cv2.GaussianBlur(res_image, (5, 5), 0)
-                canny_image = cv2.Canny(blur_image, 40, 120)
+                canny_image = cv2.Canny(blur_image, 40, 100)
                 by_canny = False
                 if is_it_empty_in_night(canny_image, treshold):
                     spotted_car = 0
@@ -265,26 +262,26 @@ class MyNet:
                     spotted_car = predicted[0]
                     predicted_results.append(spotted_car)
                     # print("parking spot coord:", end="\t")
-                if (actual_results[iii] and spotted_car):
+                if actual_results[iii] and spotted_car:
                     true_positive += 1
                     utils.draw_cross(one_park_image_show, pts_int)
 
                     # print("TP")
-                if (actual_results[iii] and not spotted_car):
+                if actual_results[iii] and not spotted_car:
                     false_negative += 1
-                    if (by_canny):
-                        utils.draw_rect(one_park_image_show, pts_int, ((150, 150, 255)))
+                    if by_canny:
+                        utils.draw_rect(one_park_image_show, pts_int, utils.COLOR_YELLOW)
                     else:
                         utils.draw_rect(one_park_image_show, pts_int, utils.COLOR_BLUE)
                     # print("FN")
-                if (not actual_results[iii] and spotted_car):
+                if not actual_results[iii] and spotted_car:
                     false_positive += 1
-                    if (by_canny):
-                        utils.draw_cross(one_park_image_show, pts_int, (150, 150, 255))
+                    if by_canny:
+                        utils.draw_cross(one_park_image_show, pts_int, utils.COLOR_YELLOW)
                     else:
                         utils.draw_cross(one_park_image_show, pts_int, utils.COLOR_BLUE)
                     # print("FP")
-                if (not actual_results[iii] and not spotted_car):
+                if not actual_results[iii] and not spotted_car:
                     true_negative += 1
                     utils.draw_rect(one_park_image_show, pts_int)
                     # print("TN")
