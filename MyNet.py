@@ -19,8 +19,8 @@ import utils
 
 
 def is_it_empty_in_night(canny_image, treshold):
-    n_white_pix = np.sum(canny_image == 255)
-    if n_white_pix > treshold:
+    n_white_pix = np.sum(canny_image == utils.MAX_BRIGHTNESS)
+    if n_white_pix > treshold: # there is almost no edges
         return False
     else:
         return True
@@ -291,7 +291,8 @@ class MyNet:
                     true_negative += 1
                     utils.draw_rect(one_park_image_show, pts_int)
                     # print("TN")
-
+                #cv2.putText(one_park_image_show, str(pts_int[0][0]+pts_int[0][1]), (pts_int[0][0], pts_int[0][1]), cv2.FONT_HERSHEY_SIMPLEX, thickness=2, fontScale=0.5, color=25)
+                #cv2.putText(one_park_image_show, str(pts_int[2][0]+pts_int[2][1]), (pts_int[2][0], pts_int[2][1]), cv2.FONT_HERSHEY_SIMPLEX, thickness=2, fontScale=0.5, color=25)
                 iii += 1
 
             cv2.imshow('one_park_image', one_park_image_show)
