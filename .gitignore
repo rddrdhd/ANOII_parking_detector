@@ -3,4 +3,6 @@ test_images/
 train_images/
 trained_nets/
 win_venv/
+ubu_venv/
+.idea/
 nets/__pycache__/

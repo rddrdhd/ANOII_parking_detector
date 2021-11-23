@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 def vgg_block(num_convs, in_channels, out_channels):
     layers = []
-    for _  in range(num_convs):
+    for _ in range(num_convs):
         layers.append(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1))
         layers.append(nn.BatchNorm2d(out_channels))
@@ -19,6 +19,7 @@ def vgg_block(num_convs, in_channels, out_channels):
 def vgg(conv_arch, in_channels):
     # nn.BatchNorm3d(64)
     conv_blks = []
+    in_channels = 3
     # The convolutional part
     for (num_convs, out_channels) in conv_arch:
         conv_blks.append(vgg_block(num_convs, in_channels, out_channels))
