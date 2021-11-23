@@ -9,6 +9,8 @@ import torchvision.models as models
 import torchvision.transforms.functional as TF
 from nets.GoogLeNet import GoogLeNet
 from nets.VGGNet import VGGNet
+from nets.ResNet import ResNet
+from nets.DenseNet import DenseNet
 from PIL import Image
 import utils
 
@@ -19,10 +21,8 @@ import utils
 def is_it_empty_in_night(canny_image, treshold):
     n_white_pix = np.sum(canny_image == 255)
     if n_white_pix > treshold:
-        print('Auto! Má totiž tolik pixelů hran:', n_white_pix)
         return False
     else:
-        print('Prádné! Má totiž tolik pixelů hran:', n_white_pix)
         return True
 
 
@@ -79,7 +79,13 @@ class MyNet:
             net = GoogLeNet(3).net  # models.googlenet(pretrained=True)
 
         elif self.type == "VGGNet":
-            net = VGGNet(3).net  # models.googlenet(pretrained=True)
+            net = VGGNet(3).net
+
+        elif self.type == "ResNet":
+            net = ResNet(3, True).net # models.resnet18(pretrained=True)
+
+        elif self.type == "DenseNet":
+            net = DenseNet(3).net # models.resnet18(pretrained=True)
 
         # using CUDA if availble
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
