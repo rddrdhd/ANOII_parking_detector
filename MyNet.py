@@ -270,26 +270,32 @@ class MyNet:
                     # print("parking spot coord:", end="\t")
                 if actual_results[iii] and spotted_car:
                     true_positive += 1
-                    utils.draw_cross(one_park_image_show, pts_int)
+                    if by_canny:
+                        utils.draw_dotted_cross(one_park_image_show, pts_int, utils.COLOR_GREEN)
+                    else:
+                        utils.draw_cross(one_park_image_show, pts_int)
 
                     # print("TP")
                 if actual_results[iii] and not spotted_car:
                     false_negative += 1
                     if by_canny:
-                        utils.draw_rect(one_park_image_show, pts_int, utils.COLOR_YELLOW)
+                        utils.draw_dotted_rect(one_park_image_show, pts_int, utils.COLOR_BLUE)
                     else:
                         utils.draw_rect(one_park_image_show, pts_int, utils.COLOR_BLUE)
                     # print("FN")
                 if not actual_results[iii] and spotted_car:
                     false_positive += 1
                     if by_canny:
-                        utils.draw_cross(one_park_image_show, pts_int, utils.COLOR_YELLOW)
+                        utils.draw_dotted_cross(one_park_image_show, pts_int, utils.COLOR_BLUE)
                     else:
                         utils.draw_cross(one_park_image_show, pts_int, utils.COLOR_BLUE)
-                    # print("FP")
+                # print("FP")
                 if not actual_results[iii] and not spotted_car:
                     true_negative += 1
-                    utils.draw_rect(one_park_image_show, pts_int)
+                    if by_canny:
+                        utils.draw_dotted_rect(one_park_image_show, pts_int, utils.COLOR_GREEN)
+                    else:
+                        utils.draw_rect(one_park_image_show, pts_int)
                     # print("TN")
                 #cv2.putText(one_park_image_show, str(pts_int[0][0]+pts_int[0][1]), (pts_int[0][0], pts_int[0][1]), cv2.FONT_HERSHEY_SIMPLEX, thickness=2, fontScale=0.5, color=25)
                 #cv2.putText(one_park_image_show, str(pts_int[2][0]+pts_int[2][1]), (pts_int[2][0], pts_int[2][1]), cv2.FONT_HERSHEY_SIMPLEX, thickness=2, fontScale=0.5, color=25)

@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 import math
@@ -14,7 +13,8 @@ COLOR_GREEN = (0, MAX_BRIGHTNESS, 0)
 def imshow(img):
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show() 
+    plt.show()
+
 
 def draw_rect(img, points, color=COLOR_GREEN):
     # obtáhnout parkovací místo
@@ -23,11 +23,48 @@ def draw_rect(img, points, color=COLOR_GREEN):
     cv2.line(img, points[2], points[3], color, 3)
     cv2.line(img, points[3], points[0], color, 3)
 
+def draw_dotted_rect(img, points, color=COLOR_GREEN):
+    # obtáhnout parkovací místo
+    draw_line(img, points[0], points[1], color, 3, style='dotted', gap=20)
+    draw_line(img, points[1], points[2], color, 3, style='dotted', gap=20)
+    draw_line(img, points[2], points[3], color, 3, style='dotted', gap=20)
+    draw_line(img, points[3], points[0], color, 3, style='dotted', gap=20)
+
+def draw_dotted_cross(img, points, color=COLOR_GREEN):
+    # obtáhnout parkovací místo
+    draw_line(img, points[0], points[2], color, 3, style='dotted', gap=20)
+    draw_line(img, points[3], points[1], color, 3, style='dotted', gap=20)
+
 
 def draw_cross(img, points, color=COLOR_RED):
     # křížek na body parkovacího místa
     cv2.line(img, points[0], points[2], color, 3)
     cv2.line(img, points[3], points[1], color, 3)
+
+
+def draw_line(img, pt1, pt2, color, thickness=1, style='dotted', gap=20):
+    dist = ((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2) ** .5
+    pts = []
+    for i in np.arange(0, dist, gap):
+        r = i / dist
+        x = int((pt1[0] * (1 - r) + pt2[0] * r) + .5)
+        y = int((pt1[1] * (1 - r) + pt2[1] * r) + .5)
+        p = (x, y)
+        pts.append(p)
+
+    if style == 'dotted':
+        for p in pts:
+            cv2.circle(img, p, thickness, color, -1)
+    else:
+        s = pts[0]
+        e = pts[0]
+        i = 0
+        for p in pts:
+            s = e
+            e = p
+            if i % 2 == 1:
+                cv2.line(img, s, e, color, thickness)
+            i += 1
 
 
 def get_true_results(filename='groundtruth.txt'):
@@ -124,11 +161,11 @@ def get_coordinates(filename='parking_map_python.txt'):
 
 def get_parking_evaluation(TP, TN, FP, FN, i):
     # vyhodnotím všechny parkovací místa z obrázku
-    precision = float(float(TP)/float(TP+FP))
-    sensitivity = float(float(TP)/float(TP+FN))
-    F1 = 2.0*(float(precision*sensitivity)/float(precision+sensitivity))
-    mcc_sqrt = math.sqrt(float(TP+FP)*float(TP+FN)*float(TN+FP)*float(TN+FN))
-    MCC = float(TP*TN - FP*FN)/float(mcc_sqrt)
+    precision = float(float(TP) / float(TP + FP))
+    sensitivity = float(float(TP) / float(TP + FN))
+    F1 = 2.0 * (float(precision * sensitivity) / float(precision + sensitivity))
+    mcc_sqrt = math.sqrt(float(TP + FP) * float(TP + FN) * float(TN + FP) * float(TN + FN))
+    MCC = float(TP * TN - FP * FN) / float(mcc_sqrt)
     return {
         "TP": TP,
         "TN": TN,
@@ -138,7 +175,7 @@ def get_parking_evaluation(TP, TN, FP, FN, i):
         "sensitivity": sensitivity,
         # f1 score - harmonic mean of precision and sensitivity
         "f1": F1,
-        "accuracy": (float)(TP+TN)/(float)(i),
+        "accuracy": (float)(TP + TN) / (float)(i),
         "mcc": MCC
     }
 
@@ -157,4 +194,3 @@ def print_evaluation_result(result):
     print("{:.4f}".format(result.get("f1")), end="\t\t")
     print("{:.4f}".format(result.get("accuracy")), end="\t\t")
     print("{:.4f}".format(result.get("mcc")))
-
