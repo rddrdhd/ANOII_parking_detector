@@ -1,15 +1,15 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from torch import nn
 import torchvision.models as models
+
 
 def conv_block(input_channels, num_channels):
     return nn.Sequential(
         nn.BatchNorm2d(input_channels), nn.ReLU(),
         nn.Conv2d(input_channels, num_channels, kernel_size=3, padding=1))
+
 
 class DenseBlock(nn.Module):
     def __init__(self, num_convs, input_channels, num_channels):
@@ -23,8 +23,6 @@ class DenseBlock(nn.Module):
     def forward(self, X):
         for blk in self.net:
             Y = blk(X)
-            # Concatenate the input and output of each block on the channel
-            # dimension
             X = torch.cat((X, Y), dim=1)
         return X
 
@@ -33,7 +31,8 @@ def transition_block(input_channels, num_channels):
     return nn.Sequential(
         nn.BatchNorm2d(input_channels), nn.ReLU(),
         nn.Conv2d(input_channels, num_channels, kernel_size=1),
-        nn.AvgPool2d(kernel_size=2, stride=2))
+        nn.AvgPool2d(kernel_size=2, stride=2)
+    )
 
 
 def get_my_densenet(dimensions=3):
@@ -57,10 +56,7 @@ def get_my_densenet(dimensions=3):
                         nn.LazyLinear(num_channels, 2))
     return net
 
+
 class DenseNet:
-    def __init__(self, dimensions, pretrained=False):
+    def __init__(self, dimensions):
         self.net = get_my_densenet(dimensions)
-
-
-            #varianta 2 = good shit
-            #varianta 3 - zamrdazím vrstvy, vytvořím si novou

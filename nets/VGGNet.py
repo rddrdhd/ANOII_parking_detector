@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,10 +15,9 @@ def vgg_block(num_convs, in_channels, out_channels):
     return nn.Sequential(*layers)
 
 
-def vgg(conv_arch, in_channels):
-    # nn.BatchNorm3d(64)
+def vgg(conv_arch, in_channels=3):
     conv_blks = []
-    in_channels = 3
+
     # The convolutional part
     for (num_convs, out_channels) in conv_arch:
         conv_blks.append(vgg_block(num_convs, in_channels, out_channels))
@@ -28,9 +26,10 @@ def vgg(conv_arch, in_channels):
     return nn.Sequential(
         *conv_blks, nn.Flatten(),
         # The fully-connected part
-        nn.LazyLinear( 4096), nn.ReLU(), nn.Dropout(0.5),
-        nn.LazyLinear( 4096), nn.ReLU(), nn.Dropout(0.5),
-        nn.LazyLinear( 10))
+        nn.LazyLinear(4096), nn.ReLU(), nn.Dropout(0.5),
+        nn.LazyLinear(4096), nn.ReLU(), nn.Dropout(0.5),
+        nn.LazyLinear(10))
+
 
 def gimme_vggnet(dimensions):
     conv_arch = ((dimensions, 64), (dimensions, 128), (2, 256), (2, 512), (2, 512))
