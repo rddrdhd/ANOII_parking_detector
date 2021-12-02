@@ -55,11 +55,8 @@ def get_my_resnet(dimensions=3):
     return net
 
 class ResNet:
-    def __init__(self, dimensions, pretrained=False):
-        if pretrained:
-            self.net = models.resnet18(pretrained=True)
-        else:
-            self.net = get_my_resnet(dimensions)
+    def __init__(self, dimensions):
+        self.net = get_my_resnet(dimensions)
 
 
             #varianta 2 = good shit

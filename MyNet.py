@@ -28,7 +28,7 @@ def is_it_empty_in_night(canny_image, treshold):
 
 class MyNet:
 
-    def __init__(self, dimensions, net_type, batch_size=8, epoch=1, img_size=224):
+    def __init__(self, dimensions, net_type, batch_size=8, epoch=1, img_size=224, pretrained = False):
         self.data = []
         # TODO fix error for grayscale
         self.dimensions = dimensions  # grayscale=1 / rgb=3
@@ -36,6 +36,7 @@ class MyNet:
         self.batch_size = batch_size
         self.epoch = epoch
         self.img_size = img_size
+        self.pretrained = pretrained
 
         self.path = 'trained_nets/' + net_type + '_e' + str(epoch) + '_d' + str(dimensions) + '_s' + str(
             self.img_size) + '.pth'
@@ -62,7 +63,6 @@ class MyNet:
         """
 
     def train(self):
-
         # prepair data
         data_dir = 'train_images'
         image_datasets = datasets.ImageFolder(data_dir, transform=self.transform)
@@ -72,20 +72,31 @@ class MyNet:
         images, labels = iter(data_loader).next()
 
         # print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
-        # cv2.imshow(torchvision.utils.make_grid(images))
         utils.imshow(torchvision.utils.make_grid(images))
         # net types
         if self.type == "GoogLeNet":
-            net = GoogLeNet(3).net  # models.googlenet(pretrained=True)
+            if(not self.pretrained):
+                net = GoogLeNet(3).net
+            else:
+                net = models.googlenet(pretrained=True)
 
         elif self.type == "VGGNet":
-            net = VGGNet(3).net
+            if(not self.pretrained):
+                net = VGGNet(3).net  # models.googlenet(pretrained=True)
+            else:
+                net = models.vggnet(pretrained=True)
 
         elif self.type == "ResNet":
-            net = ResNet(3, True).net # models.resnet18(pretrained=True)
+            if(not self.pretrained):
+                net = ResNet(3).net  # models.googlenet(pretrained=True)
+            else:
+                net = models.resnet18(pretrained=True)
 
         elif self.type == "DenseNet":
-            net = DenseNet(3).net # models.resnet18(pretrained=True)
+            if(not pretrained):
+                net = DenseNet(3).net  # models.googlenet(pretrained=True)
+            else:
+                net = models.resnet18(pretrained=True)
 
         # using CUDA if availble
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -137,7 +148,19 @@ class MyNet:
 
         net = torch.load(self.path)
 
-        print(self.type, "loaded from", self.path)
+        if not self.pretrained:
+            print(self.type, "loaded from", self.path)
+        else:
+            print(self.type,"loaded from torch models")
+            if self.type == "GoogLeNet":
+                net = models.googlenet(pretrained=True)
+
+            elif self.type == "VGGNet":
+                net = models.vggnet(pretrained=True)
+
+            elif self.type == "ResNet":
+                net = models.resnet18(pretrained=True)
+
 
         net.eval()
         device = torch.device("cuda:0" if torch.cuda.is_available()
@@ -218,9 +241,18 @@ class MyNet:
         true_positive = 0  # true positive
         true_negative = 0  # true negative
 
-        net = torch.load(self.path)
+        if not self.pretrained:
+            print(self.type, "loaded from", self.path)
+        else:
+            print(self.type, "loaded from torch models")
+            if self.type == "GoogLeNet":
+                net = models.googlenet(pretrained=True)
 
-        print(self.type, "loaded from", self.path)
+            elif self.type == "VGGNet":
+                net = models.vggnet(pretrained=True)
+
+            elif self.type == "ResNet":
+                net = models.resnet18(pretrained=True)
 
         net.eval()
         device = torch.device("cuda:0" if torch.cuda.is_available()
