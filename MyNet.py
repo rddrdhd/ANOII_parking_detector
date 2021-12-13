@@ -50,9 +50,9 @@ class MyNet:
         data_loader = torch.utils.data.DataLoader(
             image_datasets, batch_size=self.batch_size, shuffle=True, num_workers=4)
         images, labels = iter(data_loader).next()
-        #classes = ('free', 'full')
-        #print("\t First batch:", end=" ")
-        #print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
+        # classes = ('free', 'full')
+        # print("\t First batch:", end=" ")
+        # print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
         utils.imshow(torchvision.utils.make_grid(images))
 
         # net types
@@ -109,7 +109,7 @@ class MyNet:
 
         print(' - Training finished\t\t')
         torch.save(net, self.path)
-        print(' -',self.type, 'saved to', self.path)
+        print(' -', self.type, 'saved to', self.path)
 
     def test(self):
         actual_results = utils.get_true_results()  # ground truth
@@ -123,7 +123,7 @@ class MyNet:
 
         if not self.pretrained:
             net = torch.load(self.path)
-            print(" -",self.type, "loaded from", self.path)
+            print(" -", self.type, "loaded from", self.path)
         else:
             print("-", self.type, "loaded from torch models")
             if self.type == "GoogLeNet":
@@ -205,16 +205,16 @@ class MyNet:
         if not self.pretrained:
             try:
                 net = torch.load(self.path)
-                print(" -",self.type, "loaded from", self.path)
+                print(" -", self.type, "loaded from", self.path)
             except FileNotFoundError:
-                print("E: No",self.path,"is trained!")
+                print("E: No", self.path, "is trained!")
                 return
             except:
                 print("E: Problem loading net!")
                 return
 
         else:
-            print(" -",self.type, "loaded from torch models")
+            print(" -", self.type, "loaded from torch models")
 
             if self.type == "GoogLeNet":
                 net = models.googlenet(pretrained=True)
@@ -249,7 +249,7 @@ class MyNet:
                 if is_it_empty_in_night(canny_image, threshold):
                     spotted_car = 0
                     predicted_results.append(spotted_car)
-                    #cv2.imshow('canny_image', canny_image)
+                    # cv2.imshow('canny_image', canny_image)
                     by_canny = True
 
                 else:
