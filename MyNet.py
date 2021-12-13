@@ -26,7 +26,7 @@ def is_it_empty_in_night(canny_image, threshold):
 
 class MyNet:
 
-    def __init__(self, dimensions=3, net_type=3, batch_size=8, epoch=1, img_size=96, pretrained=False):
+    def __init__(self, pretrained=False, dimensions=3, net_type="idk", batch_size=8, epoch=3, img_size=96):
         self.data = []
         self.dimensions = dimensions  # grayscale=1 / rgb=3
         self.type = net_type
@@ -50,8 +50,9 @@ class MyNet:
         data_loader = torch.utils.data.DataLoader(
             image_datasets, batch_size=self.batch_size, shuffle=True, num_workers=4)
         images, labels = iter(data_loader).next()
-        # classes = ('free', 'full')
-        # print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
+        #classes = ('free', 'full')
+        #print("\t First batch:", end=" ")
+        #print(' '.join('%5s' % classes[labels[j]] for j in range(self.batch_size)))
         utils.imshow(torchvision.utils.make_grid(images))
 
         # net types
@@ -71,23 +72,24 @@ class MyNet:
             else:
                 net = models.resnet18(pretrained=True)
         elif self.type == "DenseNet":
-            if not pretrained:
+            if not self.pretrained:
                 net = DenseNet(3).net  # models.googlenet(pretrained=True)
             else:
                 net = models.resnet18(pretrained=True)
         else:
-            print("I dont know this type", self.type)
-            return 0
+            print("E: I dont know this type", self.type)
+            return
+
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        print("using", device)
+        print(" - Using", device)
         net.to(device)
 
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-        print("Starting trainig:\t", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
+        print(" - Training started:", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
 
         for epoch in range(self.epoch):  # loop over the dataset multiple times
-            print('epoch %d' % epoch)
+
             running_loss = 0.0
             for i, data in enumerate(data_loader, 0):
                 inputs, labels = data[0].to(device), data[1].to(device)
@@ -101,13 +103,13 @@ class MyNet:
                 # print statistics
                 running_loss += loss.item()
                 if i % 20 == 19:  # print every 2000 mini-batches
-                    print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 20))
+                    print('\t[%d, %5d/520] loss: %.3f' %
+                          (epoch + 1, i + 1, running_loss / 20), end="\r")
                     running_loss = 0.0
 
-        print('training finished', end="\t")
+        print(' - Training finished\t\t')
         torch.save(net, self.path)
-        print(self.type, 'saved to', self.path)
+        print(' -',self.type, 'saved to', self.path)
 
     def test(self):
         actual_results = utils.get_true_results()  # ground truth
@@ -121,9 +123,9 @@ class MyNet:
 
         if not self.pretrained:
             net = torch.load(self.path)
-            print(self.type, "loaded from", self.path)
+            print(" -",self.type, "loaded from", self.path)
         else:
-            print(self.type, "loaded from torch models")
+            print("-", self.type, "loaded from torch models")
             if self.type == "GoogLeNet":
                 net = models.googlenet(pretrained=True)
             elif self.type == "VGGNet":
@@ -139,7 +141,7 @@ class MyNet:
 
         parking_lot_coordinates = utils.get_coordinates()
 
-        print("Starting testing")
+        print(" - Testing started")
         for img in test_images:
             one_park_image = cv2.imread(img)
             one_park_image_show = one_park_image.copy()
@@ -182,14 +184,14 @@ class MyNet:
             if key == 27:  # exit on ESC
                 break
 
-        print("Testing finished for \t", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
+        print(" - Test results for ", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
 
         eval_result = utils.get_parking_evaluation(
             tp, tn, fp, fn, iii)
         utils.print_evaluation_header()
         utils.print_evaluation_result(eval_result)
 
-    def cheat_test(self, threshold):
+    def canny_test(self, threshold):
 
         actual_results = utils.get_true_results()  # ground truth
 
@@ -201,10 +203,18 @@ class MyNet:
         tn = 0
 
         if not self.pretrained:
-            print(self.type, "loaded from", self.path)
-            net = torch.load(self.path)
+            try:
+                net = torch.load(self.path)
+                print(" -",self.type, "loaded from", self.path)
+            except FileNotFoundError:
+                print("E: No",self.path,"is trained!")
+                return
+            except:
+                print("E: Problem loading net!")
+                return
+
         else:
-            print(self.type, "loaded from torch models")
+            print(" -",self.type, "loaded from torch models")
 
             if self.type == "GoogLeNet":
                 net = models.googlenet(pretrained=True)
@@ -221,7 +231,7 @@ class MyNet:
 
         parking_lot_coordinates = utils.get_coordinates()
 
-        print("Starting testing")
+        print(" - Testing with Canny started")
         for img in test_images:
             one_park_image = cv2.imread(img)
             one_park_image_show = one_park_image.copy()
@@ -239,7 +249,7 @@ class MyNet:
                 if is_it_empty_in_night(canny_image, threshold):
                     spotted_car = 0
                     predicted_results.append(spotted_car)
-                    cv2.imshow('canny_image', canny_image)
+                    #cv2.imshow('canny_image', canny_image)
                     by_canny = True
 
                 else:
@@ -287,7 +297,7 @@ class MyNet:
             if key == 27:  # exit on ESC
                 break
 
-        print("Testing finished for \t", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
+        print(" - Testing finished for", self.type, "with", self.epoch, "epochs and", self.dimensions, "dimensions")
 
         eval_result = utils.get_parking_evaluation(tp, tn, fp, fn, iii)
         utils.print_evaluation_header()

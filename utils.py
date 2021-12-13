@@ -181,11 +181,11 @@ def get_parking_evaluation(TP, TN, FP, FN, i):
 
 
 def print_evaluation_header():
-    print("TP\tTN\tFP\tFN\tprecision\tsensitivity\tf1\t\taccuracy\tMCC")
+    print("\tTP\tTN\tFP\tFN\tprecision\tsensitivity\tf1\t\taccuracy\tMCC")
 
 
 def print_evaluation_result(result):
-    print("{:.0f}".format(result.get("TP")), end="\t")
+    print("\t{:.0f}".format(result.get("TP")), end="\t")
     print("{:.0f}".format(result.get("TN")), end="\t")
     print("{:.0f}".format(result.get("FP")), end="\t")
     print("{:.0f}".format(result.get("FN")), end="\t")
