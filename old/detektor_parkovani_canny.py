@@ -103,7 +103,7 @@ def main(argv):
             blur_image = cv2.GaussianBlur(res_image,(3,3),0)
             #převedu do černobílého
             gray_image = cv2.cvtColor(blur_image, cv2.COLOR_BGR2GRAY)
-			#cannyho detektor hran - hodnoty jsou teď random
+			#cannyho detektor hran
             edge_image = cv2.Canny(gray_image, 40, 120)           
             
 			#zobrazím obrázky

@@ -11,7 +11,7 @@ cap = cv2.VideoCapture(0)  # 0 = kod moji kamery
 
 # XML na oblicej, dalsi here: https://github.com/opencv/opencv/tree/master/data/haarcascades
 face_cascade = cv2.CascadeClassifier(
-    'face/haarcascade_frontalface_default.xml')
+    'old/haarcascade_frontalface_default.xml')
 
 counter = 0
 nFrame = 10

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+# VGG-11
 def vgg_block(num_convs, in_channels, out_channels):
     layers = []
     for _ in range(num_convs):
